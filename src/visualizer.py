@@ -17,20 +17,23 @@ def generate_verification_charts(
     plt.style.use("seaborn-v0_8-whitegrid")
 
     # 1. 거시 GDP 괴리 및 무형자산 투자 비중(55% 임계치) 추이
-    fig, ax1 = plt.subplots(figsize=(10.5, 5.2))
+    fig, ax1 = plt.subplots(figsize=(10.5, 5.4))
     bars = ax1.bar(
         yearly_macro["year"],
         yearly_macro["delta_y_gap"],
         alpha=0.65,
+        color="#4c78a8",
         label="Delta Y_Gap",
     )
     ax1.set_xlabel("Year")
     ax1.set_ylabel("Delta Y_Gap")
+    ax1.set_ylim(0.0, float(yearly_macro["delta_y_gap"].max()) * 1.15)
 
     ax2 = ax1.twinx()
+    share_pct = yearly_macro["reported_intangible_capex_share"] * 100
     line = ax2.plot(
         yearly_macro["year"],
-        yearly_macro["reported_intangible_capex_share"] * 100,
+        share_pct,
         linewidth=2.2,
         linestyle="--",
         color="#d95f02",
@@ -38,10 +41,8 @@ def generate_verification_charts(
     )
     thresh = ax2.axhline(55.0, linestyle=":", linewidth=1.4, color="#555555", label="55% Threshold")
     ax2.set_ylabel("Intangible Share (%)")
-
-    share_pct = yearly_macro["reported_intangible_capex_share"] * 100
     y_min = min(50.0, float(share_pct.min()) - 2.0)
-    y_max = max(70.0, float(share_pct.max()) + 4.0)
+    y_max = max(72.0, float(share_pct.max()) + 6.0)
     ax2.set_ylim(y_min, y_max)
 
     handles = [bars, line[0], thresh]
@@ -50,12 +51,12 @@ def generate_verification_charts(
         handles,
         labels,
         loc="upper center",
-        bbox_to_anchor=(0.5, 1.14),
+        bbox_to_anchor=(0.5, 1.24),
         ncol=3,
         frameon=True,
     )
 
-    plt.title("Macro Gap & Intangible Investment Share (2006-2026)", pad=32)
+    plt.title("Macro Gap & Intangible Investment Share (2006-2026)", pad=44)
     plt.tight_layout()
     plt.savefig(output_dir / "ch1_ch3_macro_and_intangible_share.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -77,23 +78,35 @@ def generate_verification_charts(
     plt.savefig(output_dir / "ch2_nominal_vs_adjusted_pbr.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
-    # 3. 5장 퀀트 스크리닝 맵 (라벨 겹침 완화)
+    # 3. 5장 퀀트 스크리닝 맵
     if scored_universe is not None and not scored_universe.empty:
-        fig, ax = plt.subplots(figsize=(9.6, 5.0))
+        fig, ax = plt.subplots(figsize=(9.8, 5.2))
+        eligible_mask = scored_universe.get("core_portfolio_eligible", pd.Series(False, index=scored_universe.index)).astype(bool)
+
         ax.scatter(
-            scored_universe["rd_to_gp_conversion_3y"],
-            scored_universe["sharpe_ratio"],
-            s=scored_universe["fcf_margin_3y_avg"].clip(lower=0.02) * 800,
-            alpha=0.82,
+            scored_universe.loc[~eligible_mask, "rd_to_gp_conversion_3y"],
+            scored_universe.loc[~eligible_mask, "sharpe_ratio"],
+            s=scored_universe.loc[~eligible_mask, "fcf_margin_3y_avg"].clip(lower=0.02) * 800,
+            color="#8c96a5",
+            alpha=0.75,
+            label="Screened Out / Below Cutoff",
         )
-        ax.axvline(1.5, linestyle="--", linewidth=1.4, color="#1b9e77", label="1.5x GP Conversion Cutoff")
+        ax.scatter(
+            scored_universe.loc[eligible_mask, "rd_to_gp_conversion_3y"],
+            scored_universe.loc[eligible_mask, "sharpe_ratio"],
+            s=scored_universe.loc[eligible_mask, "fcf_margin_3y_avg"].clip(lower=0.02) * 800,
+            color="#1b9e77",
+            alpha=0.88,
+            label="Core Eligible (>=1.5x & Quality)",
+        )
+        ax.axvline(1.5, linestyle="--", linewidth=1.5, color="#d95f02", label="1.5x GP Conversion Cutoff")
 
         offsets = [
             (6, 6),
             (6, -12),
-            (-36, 6),
+            (-38, 6),
             (6, 4),
-            (-34, -10),
+            (-36, -10),
             (6, -8),
         ]
         for idx, (_, row) in enumerate(scored_universe.iterrows()):
