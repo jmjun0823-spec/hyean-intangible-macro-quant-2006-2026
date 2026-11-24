@@ -9,7 +9,7 @@ from src.calendar_alignment import apply_signal_lag
 def run_quant_screening_and_portfolio(panel_df: pd.DataFrame) -> Dict[str, object]:
     """
     본문 5장 퀀트 스크리닝 및 포트폴리오 배분:
-    - 3년 누적 무형투자 대비 매출총이익 증가분 >= 1.5배
+    - 3년 누적 무형투자 대비 매출총이익 증가 배율 >= 1.5배
     - FCF Margin, Adjusted ROIC, Sharpe Ratio
     - 외부 차입 의존 R&D 집행 + 매출총이익률(GPM) 개선 정체 한계기업 배제
     - 시그널 lag 적용으로 룩어헤드 방지
@@ -37,14 +37,13 @@ def run_quant_screening_and_portfolio(panel_df: pd.DataFrame) -> Dict[str, objec
         .reset_index(level=0, drop=True)
     )
 
-    # 최근 3년 매출총이익 순증분(delta_3y_gross_profit)과 3년 누적 GP 증분 효과 산출
-    df["delta_3y_gross_profit"] = df.groupby("ticker")["gross_profit"].diff(win)
-    df["cum_3y_gp_gain"] = (
-        df.groupby("ticker")["delta_3y_gross_profit"]
-        .transform(lambda s: s.rolling(win, min_periods=1).sum())
-        .fillna(df["gross_profit"] * 0.5)
+    df["delta_3y_gross_profit"] = (
+        df.groupby("ticker")["gross_profit"]
+        .diff(win)
+        .fillna(df["gross_profit"] * 0.30)
     )
-    df["delta_3y_gross_profit"] = df["delta_3y_gross_profit"].fillna(df["gross_profit"] * 0.25)
+    # 3년 윈도우 내 매출총이익 순증분 기준 전환 배율 산출
+    df["cum_3y_gp_gain"] = df["delta_3y_gross_profit"] * float(win)
 
     df["rd_to_gp_conversion_3y"] = np.where(
         df["cum_3y_intang_inv"] > 0,
