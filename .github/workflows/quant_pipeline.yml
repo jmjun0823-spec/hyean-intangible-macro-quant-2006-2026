@@ -26,7 +26,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Python unit, time-series, and edge-case tests
-        run: pytest -v
+        run: python -m pytest -v
 
       - name: Run Python macro & quant verification pipeline
         run: python -m src.run_all --refresh-cache
