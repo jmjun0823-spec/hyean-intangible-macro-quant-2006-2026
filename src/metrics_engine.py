@@ -8,13 +8,6 @@ from src.calendar_alignment import apply_signal_lag
 
 
 def compute_all_metrics(df: pd.DataFrame) -> Dict[str, object]:
-    """
-    본문 1~4장의 모든 검증 항목을 산출합니다:
-    - 1장: dY_gap = alpha_u * dK_u + dTFP_unmeasured 및 무형자산 투자 집약도
-    - 2장: 명목 PBR vs Adjusted PBR, Adjusted ROIC, OCF, 상위 20% vs 하위 20% H0 검정
-    - 3장: 무형자산 투자 비중(55% 임계치 돌파 연도) 및 글로벌 수급 상관계수
-    - 4장: 진부화(Cliff Effect) 및 손상차손/변동성 테일 리스크
-    """
     if df is None or df.empty:
         return {
             "panel": pd.DataFrame(),
@@ -27,7 +20,6 @@ def compute_all_metrics(df: pd.DataFrame) -> Dict[str, object]:
     if "total_debt" not in d.columns:
         d["total_debt"] = d["book_equity"] * 0.4
 
-    # 무형투자 추정치 및 누적 무형/유형 자본 스톡
     d["intangible_investment_flow"] = (
         d["rd_expense"] * CONFIG.rd_capitalization_rate
         + d["sga_expense"] * CONFIG.sga_intangible_share
@@ -57,7 +49,6 @@ def compute_all_metrics(df: pd.DataFrame) -> Dict[str, object]:
     d["capitalized_intangible_stock"] = cap_intang_stock
     d["capitalized_tangible_stock"] = cap_tangible_stock
 
-    # [1장] 거시 통계 구조적 맹점: dY_gap = alpha_u * dK_u + dTFP_unmeasured
     d["dK_u"] = d.groupby("ticker")["capitalized_intangible_stock"].diff().fillna(0.0)
     d["dTFP_unmeasured"] = (
         d["intangible_investment_flow"] * 0.15
@@ -65,7 +56,6 @@ def compute_all_metrics(df: pd.DataFrame) -> Dict[str, object]:
     )
     d["delta_y_gap"] = CONFIG.alpha_u * d["dK_u"] + CONFIG.unmeasured_tfp_weight * d["dTFP_unmeasured"]
 
-    # 시그널 지연(t 시점 생성 시그널 -> t+1 시점 적용)
     d["lagged_intangible_share"] = (
         d.groupby("ticker")["empirical_intangible_share"]
         .transform(lambda s: apply_signal_lag(s, CONFIG.signal_lag_periods))
@@ -93,7 +83,6 @@ def compute_all_metrics(df: pd.DataFrame) -> Dict[str, object]:
         + (yearly_macro["delta_y_gap"] / yearly_macro["total_revenue"].replace(0, np.nan)).fillna(0.0) * 0.10
     )
 
-    # [2장] 회계 비용 처리 왜곡 & Adjusted PBR / Adjusted ROIC / H0 검정
     d["nominal_pbr"] = d["market_cap"] / d["book_equity"].replace(0, np.nan)
     d["adjusted_book_equity"] = d["book_equity"] + d["capitalized_intangible_stock"]
     d["adjusted_pbr"] = d["market_cap"] / d["adjusted_book_equity"].replace(0, np.nan)
@@ -124,7 +113,6 @@ def compute_all_metrics(df: pd.DataFrame) -> Dict[str, object]:
     p_val_adj_pbr = _safe_ttest(top20["adjusted_pbr"], bot20["adjusted_pbr"])
     p_val_roic = _safe_ttest(top20["adjusted_roic"], bot20["adjusted_roic"])
 
-    # [3장] 수급 및 무형자산 투자 비중(55% 임계치)
     if len(yearly_macro) >= 3 and yearly_macro["reported_intangible_capex_share"].nunique() > 1:
         flow_corr_raw, flow_pval_raw = stats.pearsonr(
             yearly_macro["reported_intangible_capex_share"], yearly_macro["net_fund_flow_b"]
@@ -138,7 +126,6 @@ def compute_all_metrics(df: pd.DataFrame) -> Dict[str, object]:
         int(y) for y in yearly_macro.loc[yearly_macro["reported_intangible_capex_share"] >= 0.55, "year"]
     ]
 
-    # [4장] 진부화 속도(Cliff Effect) 및 테일 리스크
     d["impairment_to_equity"] = d["impairment_loss"] / d["book_equity"].replace(0, np.nan)
     risk_by_sector = (
         d.groupby("sector_type", as_index=False)
