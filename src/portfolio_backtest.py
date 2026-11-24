@@ -7,13 +7,6 @@ from src.calendar_alignment import apply_signal_lag
 
 
 def run_quant_screening_and_portfolio(panel_df: pd.DataFrame) -> Dict[str, object]:
-    """
-    본문 5장 퀀트 스크리닝 및 포트폴리오 배분:
-    - 3년 누적 무형투자 대비 매출총이익 증가분 >= 1.5배
-    - FCF Margin, Adjusted ROIC, Sharpe Ratio
-    - 외부 차입 의존 R&D 집행 + 매출총이익률(GPM) 개선 정체 한계기업 배제
-    - 시그널 lag 적용으로 룩어헤드 방지
-    """
     if panel_df is None or panel_df.empty:
         return {
             "scored_universe": pd.DataFrame(),
@@ -46,7 +39,6 @@ def run_quant_screening_and_portfolio(panel_df: pd.DataFrame) -> Dict[str, objec
         df["delta_3y_gross_profit"] / df["cum_3y_intang_inv"],
         0.0,
     )
-    # 룩어헤드 방지용 지연 전환율 시그널
     df["lagged_rd_to_gp_conversion_3y"] = (
         df.groupby("ticker")["rd_to_gp_conversion_3y"]
         .transform(lambda s: apply_signal_lag(s, CONFIG.signal_lag_periods))
@@ -71,7 +63,6 @@ def run_quant_screening_and_portfolio(panel_df: pd.DataFrame) -> Dict[str, objec
         gpm_chg_3y = float(latest["gpm_delta_3y"])
         debt_chg_3y = float(latest["debt_growth_3y"])
 
-        # 외부 차입 증가 + GPM 정체(또는 하락) 한계기업 여부
         excluded_debt_stagnant_gpm = bool(
             (debt_chg_3y > CONFIG.max_debt_growth_3y) and (gpm_chg_3y <= CONFIG.min_gpm_delta_3y)
         )
