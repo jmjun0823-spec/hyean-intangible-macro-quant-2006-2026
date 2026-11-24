@@ -1,0 +1,7 @@
+date,year,ticker,market,sector_type,market_cap,book_equity,total_debt,revenue,gross_profit,operating_cash_flow,capex_tangible,rd_expense,sga_expense,intangible_capex_share,net_fund_flow_billions,impairment_loss,volatility_annual
+2024-12-31,2024,MSFT,US,intangible_ai_ip,3150.0,268.0,60.0,245.1,171.5,118.5,14.5,29.5,31.2,0.78,16.4,0.0,0.22
+2024-12-31,2024,NVDA,US,intangible_ai_ip,3320.0,66.0,10.2,113.3,84.8,64.1,4.8,12.9,3.5,0.84,22.8,0.0,0.44
+2024-12-31,2024,GOOGL,US,intangible_ai_ip,2280.0,325.0,28.5,350.0,203.7,125.2,32.3,49.3,42.1,0.74,14.1,0.4,0.25
+2024-12-31,2024,CAT,US,traditional_capex,175.0,19.6,37.0,64.8,16.8,11.2,4.4,2.1,7.4,0.28,-2.1,0.3,0.24
+2024-12-31,2024,005930.KS,KR_KOSPI,intangible_ai_ip,260.0,275.0,15.0,218.0,78.5,52.0,28.0,21.5,29.0,0.62,5.9,1.2,0.27
+2024-12-31,2024,051910.KS,KR_KOSPI,traditional_capex,42.0,26.5,14.5,36.4,6.2,3.1,3.5,1.3,3.8,0.34,-1.4,0.8,0.33
