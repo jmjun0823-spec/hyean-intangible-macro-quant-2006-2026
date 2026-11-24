@@ -1,4 +1,5 @@
 import pandas as pd
+import pandas as pd
 from src.calendar_alignment import align_market_time_series, apply_signal_lag, get_business_calendar
 from src.data_loader import load_or_generate_panel
 from src.metrics_engine import compute_all_metrics
@@ -72,7 +73,7 @@ def test_signal_lag_and_debt_stagnant_gpm_exclusion():
     port = run_quant_screening_and_portfolio(metrics["panel"])
     scored = port["scored_universe"].set_index("ticker")
 
-    assert scored.loc["DISTRESSED_LIM", "excluded_debt_stagnant_gpm"] is True
-    assert scored.loc["DISTRESSED_LIM", "core_portfolio_eligible"] is False
-    assert scored.loc["QUALITY_CORE", "excluded_debt_stagnant_gpm"] is False
-    assert scored.loc["QUALITY_CORE", "core_portfolio_eligible"] is True
+    assert bool(scored.loc["DISTRESSED_LIM", "excluded_debt_stagnant_gpm"]) is True
+    assert bool(scored.loc["DISTRESSED_LIM", "core_portfolio_eligible"]) is False
+    assert bool(scored.loc["QUALITY_CORE", "excluded_debt_stagnant_gpm"]) is False
+    assert bool(scored.loc["QUALITY_CORE", "core_portfolio_eligible"]) is True
