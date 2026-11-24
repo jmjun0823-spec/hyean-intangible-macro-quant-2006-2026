@@ -38,10 +38,6 @@ def load_or_generate_panel(
     refresh_cache: bool = False,
     raw_override_df: Optional[pd.DataFrame] = None,
 ) -> pd.DataFrame:
-    """
-    2006~2026년 장기 패널 데이터를 로드하거나 생성합니다.
-    raw_override_df가 주어지면 빈 데이터/결측을 안전하게 정규화해 반환합니다.
-    """
     if raw_override_df is not None:
         if raw_override_df.empty:
             return _empty_panel_frame()
@@ -63,7 +59,6 @@ def load_or_generate_panel(
     years = np.arange(CONFIG.start_year, CONFIG.end_year + 1)
     dates = [pd.Timestamp(f"{y}-12-31") for y in years]
 
-    # (market, sector_type, base_rev, rd_ratio, sga_ratio, capex_t_ratio, intang_share, flow_base, drift, debt_ratio)
     profiles = {
         "MSFT": ("US", "intangible_ai_ip", 65.0, 0.14, 0.22, 0.06, 0.76, 8.5, 0.16, 0.25),
         "NVDA": ("US", "intangible_ai_ip", 12.0, 0.22, 0.12, 0.04, 0.82, 11.0, 0.34, 0.15),
