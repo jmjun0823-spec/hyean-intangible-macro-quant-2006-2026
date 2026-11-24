@@ -17,7 +17,7 @@ def generate_verification_charts(
     plt.style.use("seaborn-v0_8-whitegrid")
 
     # 1. 거시 GDP 괴리 및 무형자산 투자 비중(55% 임계치) 추이
-    fig, ax1 = plt.subplots(figsize=(10.5, 5.4))
+    fig, ax1 = plt.subplots(figsize=(10.5, 5.6))
     bars = ax1.bar(
         yearly_macro["year"],
         yearly_macro["delta_y_gap"],
@@ -47,17 +47,17 @@ def generate_verification_charts(
 
     handles = [bars, line[0], thresh]
     labels = [h.get_label() for h in handles]
+    fig.suptitle("Macro Gap & Intangible Investment Share (2006-2026)", y=0.98, fontsize=13)
     ax1.legend(
         handles,
         labels,
         loc="upper center",
-        bbox_to_anchor=(0.5, 1.24),
+        bbox_to_anchor=(0.5, 1.12),
         ncol=3,
         frameon=True,
     )
 
-    plt.title("Macro Gap & Intangible Investment Share (2006-2026)", pad=44)
-    plt.tight_layout()
+    plt.tight_layout(rect=[0, 0, 1, 0.92])
     plt.savefig(output_dir / "ch1_ch3_macro_and_intangible_share.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
@@ -81,7 +81,9 @@ def generate_verification_charts(
     # 3. 5장 퀀트 스크리닝 맵
     if scored_universe is not None and not scored_universe.empty:
         fig, ax = plt.subplots(figsize=(9.8, 5.2))
-        eligible_mask = scored_universe.get("core_portfolio_eligible", pd.Series(False, index=scored_universe.index)).astype(bool)
+        eligible_mask = scored_universe.get(
+            "core_portfolio_eligible", pd.Series(False, index=scored_universe.index)
+        ).astype(bool)
 
         ax.scatter(
             scored_universe.loc[~eligible_mask, "rd_to_gp_conversion_3y"],
@@ -122,7 +124,7 @@ def generate_verification_charts(
         ax.set_xlabel("3Y Intangible Investment to Gross Profit Gain (x)")
         ax.set_ylabel("Sharpe Ratio")
         ax.set_title("Chapter 5 Quant Screening: GP Conversion vs. Risk-Adjusted Return")
-        ax.legend(loc="best")
+        ax.legend(loc="best", markerscale=0.45)
         plt.tight_layout()
         plt.savefig(output_dir / "ch5_quant_screening_map.png", dpi=150, bbox_inches="tight")
         plt.close(fig)
