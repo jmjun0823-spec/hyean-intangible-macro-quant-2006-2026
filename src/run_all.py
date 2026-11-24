@@ -5,6 +5,7 @@ from pathlib import Path
 from src.data_loader import load_or_generate_panel
 from src.metrics_engine import compute_all_metrics
 from src.portfolio_backtest import run_quant_screening_and_portfolio
+from src.report_builder import build_blog_summary_markdown
 from src.visualizer import generate_verification_charts
 
 
@@ -46,6 +47,16 @@ def main() -> None:
         json.dumps(full_report, indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
+
+    build_blog_summary_markdown(
+        report_data=full_report,
+        scored_universe=port_res["scored_universe"],
+        core_portfolio=port_res["core_portfolio"],
+        risk_by_sector=metrics_res["risk_by_sector"],
+        r_models_dir=out_dir / "r_models",
+        output_path=out_dir / "blog_verification_summary.md",
+    )
+
     print(json.dumps(full_report, indent=2, ensure_ascii=False))
 
 
