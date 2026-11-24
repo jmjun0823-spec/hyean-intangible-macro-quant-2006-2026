@@ -37,27 +37,29 @@ def generate_verification_charts(
         linewidth=2.2,
         linestyle="--",
         color="#d95f02",
+        marker="o",
+        markersize=4,
         label="Intangible Investment Share (%)",
     )
     thresh = ax2.axhline(55.0, linestyle=":", linewidth=1.4, color="#555555", label="55% Threshold")
     ax2.set_ylabel("Intangible Share (%)")
-    y_min = min(50.0, float(share_pct.min()) - 2.0)
-    y_max = max(72.0, float(share_pct.max()) + 6.0)
+    y_min = min(53.0, float(share_pct.min()) - 1.5)
+    y_max = float(share_pct.max()) + 2.0
     ax2.set_ylim(y_min, y_max)
 
     handles = [bars, line[0], thresh]
     labels = [h.get_label() for h in handles]
-    fig.suptitle("Macro Gap & Intangible Investment Share (2006-2026)", y=0.98, fontsize=13)
+    ax1.set_title("Macro Gap & Intangible Investment Share (2006-2026)", pad=42, fontsize=13)
     ax1.legend(
         handles,
         labels,
         loc="upper center",
-        bbox_to_anchor=(0.5, 1.12),
+        bbox_to_anchor=(0.5, 1.13),
         ncol=3,
         frameon=True,
     )
 
-    plt.tight_layout(rect=[0, 0, 1, 0.92])
+    plt.tight_layout()
     plt.savefig(output_dir / "ch1_ch3_macro_and_intangible_share.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
 
